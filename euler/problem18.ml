@@ -1,0 +1,55 @@
+let pyramid = [
+"75";
+"95 64";
+"17 47 82";
+"18 35 87 10";
+"20 04 82 47 65";
+"19 01 23 75 03 34";
+"88 02 77 73 07 63 67";
+"99 65 04 28 06 16 70 92";
+"41 41 26 56 83 40 80 70 33";
+"41 48 72 33 47 32 37 16 94 29";
+"53 71 44 65 25 43 91 52 97 51 14";
+"70 11 33 28 77 73 17 78 39 68 17 57";
+"91 71 52 38 17 14 91 43 58 50 27 29 48";
+"63 66 04 68 89 53 67 30 73 16 69 87 40 31";
+"04 62 98 27 23 09 70 98 73 93 38 53 60 04 23"
+];;
+
+let get str column =
+  let sub = String.sub str (column * 3) 2 in
+  int_of_string sub;;
+
+let max a b =
+  if b > a then b
+  else a;;
+
+let rec run_paths remaining pos total =
+  let rec run_paths_left remaining pos total =
+    match remaining with
+      [] -> total
+    | str::rest -> run_paths rest pos (total + (get str pos))
+  in
+  let rec run_paths_right remaining pos total =
+    match remaining with
+      [] -> total
+    | str::rest -> run_paths rest (pos + 1) (total + (get str (pos + 1)))
+  in
+  match remaining with
+    [] -> total
+  | str::rest ->
+    let l = get str pos in
+    let r = get str (pos + 1) in
+    if l > r then
+      max (run_paths rest pos (total + l))
+       (run_paths_right rest (pos + 1) (total + r))
+    else
+      max (run_paths_left rest pos (total + l))
+        (run_paths rest (pos + 1) (total + r));;
+
+let run_pyramid p =
+  match p with
+    [] -> 0
+  | str::rest -> run_paths rest 0 (get str 0);;
+
+print_int (run_pyramid pyramid); print_newline ();;
