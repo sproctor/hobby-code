@@ -1,0 +1,82 @@
+#lang planet neil/sicp
+
+(define (pascal row col)
+  (cond ((or (= row 0) (= col 0) (= row col)) 1)
+        (else (+ (pascal (- row 1) (- col 1))
+                 (pascal (- row 1) col)))))
+(define phi (/ (+ 1 (sqrt 5)) 2))
+(define (fib n)
+  (define (iter a b count)
+    (if (= count 0)
+        b
+        (iter (+ a b) a (- count 1))))
+  (iter 1 0 n))
+(define (golden n)
+  (/ (expt phi n) (sqrt 5)))
+
+
+(define (fast-expt base num)
+  (define (helper acc b n)
+    (cond ((= n 1) (* acc b))
+          ((odd? n) (helper (* acc b) b (- n 1)))
+          (else (helper acc (* b b) (/ n 2)))))
+  (helper 1 base num))
+
+(define (double n)
+  (+ n n))
+(define (halve n)
+  (/ n 2))
+(define (mult a b)
+  (cond ((= b 1) a)
+        ((odd? b) (+ a (mult a (- b 1))))
+        (else (mult (double a) (halve b)))))
+(define (mult-iter a b)
+  (define (helper acc a b)
+    (cond ((= b 1) (+ acc a))
+          ((odd? b) (helper (+ acc a) a (- b 1)))
+          (else (helper acc (double a) (halve b)))))
+  (helper 0 a b))
+
+(define (fib-iter a b p q count)
+  (cond ((= count 0) b)
+        ((even? count)
+         (fib-iter a
+                   b
+                   (+ (* p p) (* q q))
+                   (+ (* q q) (* 2 q p))
+                   (/ count 2)))
+        (else (fib-iter (+ (* b q) (* a q) (* a p))
+                        (+ (* b p) (* a q))
+                        p
+                        q
+                        (- count 1)))))
+(define (square n)
+  (* n n))
+
+(define (smallest-divisor n)
+  (find-divisor n 2))
+(define (find-divisor n test-divisor)
+  (cond ((> (square test-divisor) n) n)
+        ((divides? test-divisor n) test-divisor)
+        (else (find-divisor n (+ test-divisor 1)))))
+(define (divides? a b)
+  (= (remainder b a) 0))
+
+(define (prime? n)
+  (= n (smallest-divisor n)))
+
+(define (timed-prime-test n)
+  (newline)
+  (display n)
+  (start-prime-test n (runtime)))
+(define (start-prime-test n start-time)
+  (if (prime? n)
+      (report-prime (- (runtime) start-time))))
+(define (report-prime elapsed-time)
+  (display " *** ")
+  (display elapsed-time))
+
+(define (search-for-primes n)
+  (cond ((= n 2) 
+    ((even? start) (search-for-primes (+ start 1) end))
+        ((> start end) 
