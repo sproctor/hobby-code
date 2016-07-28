@@ -52,12 +52,11 @@ solution maxP = solution' 0 $ pysieve sortedPerims
       | otherwise = -- trace ("p: " ++ (show x)) $
         solution' (acc+1) xs
 
-{-
 stupidSolution :: Integer -> Integer
 stupidSolution maxP =
   s 12 0
   where
-    s p acc
+    s m acc
       | p > maxP = acc
       | countTriangles p == 1 = trace ("p: " ++ (show p)) $
         s (p+2) (acc+1)
@@ -74,9 +73,8 @@ countTriangles p =
       | otherwise = aux a (b+1) acc
       where
         c = p - a - b
--}
 
 main = do
-  let p = 1500000
+  let p = 2000
   print $ solution p
-  -- print $ stupidSolution p
+  print $ stupidSolution p

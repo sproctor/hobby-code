@@ -6,7 +6,7 @@ import sys
 
 def get_primes(n):
     primes = np.ones(n + 1, dtype=bool)
-    for i in xrange(2, int(math.sqrt(n))):
+    for i in xrange(2, int(math.sqrt(n) + 1)):
         if primes[i]:
             for j in xrange(i * i, n + 1, i):
                 primes[j] = False
@@ -24,9 +24,9 @@ def prev_prime(n, primes):
             return i
     return -1
 
-def s(square, cube, c, prime_count, primes, maxN):
+def s(quad, cube, c, prime_count, primes, maxN):
     #print "s(" + str(square) + ", " + str(cube) + ", " + str(c) + ", " + str(prime_count) + ", ...)"
-    while square + cube + c ** 4 > maxN:
+    while quad + cube + c ** 2 > maxN:
         c = prev_prime(c, primes)
         prime_count -= 1
         if c < 0:
@@ -42,29 +42,30 @@ def primes_less_than(n, primes):
     return count
 
 def solution(n):
+    sums = np.zeros(n + 1, dtype=bool)
+    primes = get_primes(int(math.sqrt(n)))
     a = 2
-    square = a ** 2
-    b = 2
-    cube = b ** 3
-    primes = get_primes(n)
-    c = prev_prime(n + 1, primes)
-    print "c: " + str(c)
-    prime_count = primes_less_than(c + 1, primes)
-    sums = 0
-    while a > 0 and c > 0 and square + cube + 2 ** 4 <= n:
-        saved_c = c
-        saved_count = prime_count
-        while b > 0 and c > 0 and square + cube + 2 ** 4 <= n:
-            [c, prime_count] = s(square, cube, c, prime_count, primes, n)
-            sums += prime_count
+    quad = a ** 4
+    while a > 0 and quad < n:
+        b = 2
+        cube = b ** 3
+        while b > 0 and quad + cube < n:
+            c = 2
+            square = c ** 2
+            while c > 0 and quad + cube + square <= n:
+                sums[quad + cube + square] = True
+                c = next_prime(c, primes)
+                square = c ** 2
             b = next_prime(b, primes)
             cube = b ** 3
         a = next_prime(a, primes)
-        square = a ** 2
-        b = 2
-        cube = b ** 3
-        c = saved_c
-        prime_count = saved_count
-    return sums
+        quad = a ** 4
+    total = 0
+    i = 0
+    for v in sums:
+        if v:
+            total += 1
+        i += 1
+    return total
 
 print solution(int(sys.argv[1]))
