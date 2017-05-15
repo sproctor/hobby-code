@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2.7
 
 import test
 
@@ -141,18 +141,46 @@ def match_grid_doubles(grid):
                 return True
     return False
 
+def remove_number_from_squares(grid, n, squares):
+    for [x, y] in squares:
+        if isinstance(grid[x][y], list):
+            grid[x][y] = remove_value(grid[x][y], n)
+
+def squares_outside_block_for_row(block_x, y):
+    squares = []
+    for x in range(block_x * 3) + range(block_x * 3 + 3, 9):
+        squares.append([x, y])
+    return squares
+
+def squares_outside_block_for_col(x, block_y):
+    squares = []
+    for y in range(block_y * 3) + range(block_y * 3 + 3, 9):
+        squares.append([x, y])
+    return squares
+
 def remove_ineligible_outside_block(grid):
     for block_x in xrange(3):
         for block_y in xrange(3):
             for n in xrange(1, 10):
+                #TODO: refactor these two sections
                 rows = []
                 for x in xrange(block_x * 3, block_x * 3 + 3):
                     for y in xrange(block_y * 3, block_y * 3 + 3):
                         if isinstance(grid[x][y], list) and n in grid[x][y]:
-                            row.append(x)
-                if len(rows) == 1
-                    # remove n from other blocks
-                    
+                            rows.append(x)
+                if len(rows) == 1:
+                    remove_number_from_squares(grid, n, squares_outside_block_for_row(block_x, rows[0]))
+                    return True
+                cols = []
+                for x in xrange(block_y * 3, block_y * 3 + 3):
+                    for y in xrange(block_x * 3, block_x * 3 + 3):
+                        if isinstance(grid[x][y], list) and n in grid[x][y]:
+                            cols.append(y)
+                if len(cols) == 1:
+                    remove_number_from_squares(grid, n, squares_outside_block_for_col(block_y, cols[0]))
+                    return True
+    return False
+
 def solve(grid):
     changed = True
     while changed:
@@ -166,6 +194,9 @@ def solve(grid):
                     changed = True
         if not changed:
             if match_grid_doubles(grid):
+                changed = True
+        if not changed:
+            if remove_ineligible_outside_block(grid):
                 changed = True
     if not is_solved(grid):
         print "Could not solve grid:"
@@ -195,6 +226,8 @@ test.test(possible_values, [8, 8, example_grid], [2, 4, 6, 7])
 test.test(possible_values, [8, 5, example_grid], [4, 7])
 test.test(possible_values, [8, 7, example_grid], [2, 4, 6, 7, 8])
 test.test(pairs, [[1, 2, 3]], [[1, 2], [1, 3], [2, 3]])
+test.test(remove_number_from_squares, [[[[1, 2, 3], [2, 3, 4], 9], [4, [5, 2, 4], 3], [[3, 2, 1], 3, 9]], 2, [[0, 0], [0, 1], [2, 0]]],
+    [[[1, 3], [3, 4], 9], [4, [5, 2, 4], 3], [[3, 1], 3, 9]])
 print "tests completed"
 
 with open('p096_sudoku.txt') as f:
