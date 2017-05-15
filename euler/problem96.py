@@ -34,6 +34,8 @@ def possible_values(x, y, grid):
         if not isinstance(value, list):
             values = remove_value(values, value)
     if len(values) == 0:
+        print 'Bad grid:'
+        display_grid(grid)
         raise ValueError('Element at (' + str(x) + ', ' + str(y) + ') has no possible values.')
     if len(values) == 1:
         return values[0]
@@ -145,6 +147,7 @@ def remove_number_from_squares(grid, n, squares):
     for [x, y] in squares:
         if isinstance(grid[x][y], list):
             grid[x][y] = remove_value(grid[x][y], n)
+    return grid
 
 def squares_outside_block_for_row(block_x, y):
     squares = []
@@ -152,7 +155,7 @@ def squares_outside_block_for_row(block_x, y):
         squares.append([x, y])
     return squares
 
-def squares_outside_block_for_col(x, block_y):
+def squares_outside_block_for_col(block_y, x):
     squares = []
     for y in range(block_y * 3) + range(block_y * 3 + 3, 9):
         squares.append([x, y])
@@ -168,6 +171,7 @@ def remove_ineligible_outside_block(grid):
                     for y in xrange(block_y * 3, block_y * 3 + 3):
                         if isinstance(grid[x][y], list) and n in grid[x][y]:
                             rows.append(x)
+                            break
                 if len(rows) == 1:
                     remove_number_from_squares(grid, n, squares_outside_block_for_row(block_x, rows[0]))
                     return True
@@ -176,10 +180,19 @@ def remove_ineligible_outside_block(grid):
                     for y in xrange(block_x * 3, block_x * 3 + 3):
                         if isinstance(grid[x][y], list) and n in grid[x][y]:
                             cols.append(y)
+                            break
                 if len(cols) == 1:
                     remove_number_from_squares(grid, n, squares_outside_block_for_col(block_y, cols[0]))
                     return True
     return False
+
+def replace_uniques(grid):
+    changed = False
+    for x in xrange(9):
+        for y in xrange(9):
+            if replace_if_unique(grid, x, y):
+                changed = True
+    return changed
 
 def solve(grid):
     changed = True
@@ -188,10 +201,9 @@ def solve(grid):
         if replace_possibles(grid):
             changed = True
             continue
-        for x in xrange(9):
-            for y in xrange(9):
-                if replace_if_unique(grid, x, y):
-                    changed = True
+        if replace_uniques(grid):
+            changed = True
+            continue
         if not changed:
             if match_grid_doubles(grid):
                 changed = True
@@ -228,13 +240,21 @@ test.test(possible_values, [8, 7, example_grid], [2, 4, 6, 7, 8])
 test.test(pairs, [[1, 2, 3]], [[1, 2], [1, 3], [2, 3]])
 test.test(remove_number_from_squares, [[[[1, 2, 3], [2, 3, 4], 9], [4, [5, 2, 4], 3], [[3, 2, 1], 3, 9]], 2, [[0, 0], [0, 1], [2, 0]]],
     [[[1, 3], [3, 4], 9], [4, [5, 2, 4], 3], [[3, 1], 3, 9]])
+test.test(squares_outside_block_for_row, [0, 3],
+    [[3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3]])
+test.test(squares_outside_block_for_col, [1, 5],
+    [[5, 0], [5, 1], [5, 2], [5, 6], [5, 7], [5, 8]])
 print "tests completed"
 
-with open('p096_sudoku.txt') as f:
-    content = f.readlines()
+def main():
+    with open('p096_sudoku.txt') as f:
+        content = f.readlines()
 
-for n in xrange(50):
-    grid = [[int(x) for x in list(content[n * 10 + i + 1].strip())] for i in xrange(9)]
-    solve(grid)
-    print "grid " + str(n + 1) + ':'
-    display_grid(grid)
+    for n in xrange(50):
+        grid = [[int(x) for x in list(content[n * 10 + i + 1].strip())] for i in xrange(9)]
+        print grid
+        solve(grid)
+        print "grid " + str(n + 1) + ':'
+        display_grid(grid)
+
+# main()
