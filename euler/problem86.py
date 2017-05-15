@@ -4,12 +4,13 @@ import math
 import sys
 
 def distinct_cuboids(a, b, c, m):
-    if not is_valid_triple(a, b, c, m):
+    if not is_valid_triple(a, b, m):
         return 0
-    sum = equivalent_cubes(a, b)
+    sum = equivalent_cubes(a, b, m)
+    #print "a: " + str(a) + ", b: " + str(b) + ", c: " + str(c) + ", sum: " + str(sum)
     multiplier = 2
-    while is_valid_triple(a * multiplier, b * multiplier, c * multiplier, m):
-        sum += equivalent_cubes(a * multiplier, b * multiplier)
+    while is_valid_triple(a * multiplier, b * multiplier, m):
+        sum += equivalent_cubes(a * multiplier, b * multiplier, m)
         multiplier = multiplier + 1
 
     # add sums for a = m
@@ -18,48 +19,39 @@ def distinct_cuboids(a, b, c, m):
     sum += distinct_cuboids(-a + 2 * b + 2 * c, -2 * a + b + 2 * c, -2 * a + 2 * b + 3 * c, m)
     return sum
 
-def equivalent_cubes(a, b):
-    if a > b:
-        return equivalent_cubes(b, a)
-    r = int(math.floor(2 * a - b) / 2) + 1
-    if r < 0:
-        return 0
-    return r
-
-def is_valid_triple(a, b, c, m):
+def is_valid_triple(a, b, m):
     if a > m and b > m:
         return False
     if a > 2 * m or b > 2 * m:
         return False
     return True
 
-def shortest_path_is_integer(a, b, c):
-    longest = max(a, b, c)
-    rest = a + b + c - longest
-    return hyp_is_integer(longest, rest)
+def equivalent_cubes(a, b, m):
+    if a == b:
+        return cubes_helper(a, b, m)
+    return cubes_helper(a, b, m) + cubes_helper(b, a, m)
 
-def hyp_is_integer(x, y):
-    return is_square(x ** 2 + y ** 2)
-
-def is_square(x):
-    root = math.floor(math.sqrt(x))
-    return root * root == x
+def cubes_helper(a, b, m):
+    if a > m or b > 2 * a:
+        return 0
+    if a > b:
+        return int(math.floor(b / 2))
+    return int(math.floor(2 * a - b) / 2) + 1
 
 def solution(p):
-    acc = 0
+    c = 0
     m = 0
-    while acc <= p:
-        m = m + 1
-        r = distinct_cuboids(m, acc)
-        print "m: " + str(m) + " r: " + str(r)
-        acc = acc + r
+    while c <= p:
+        m += 1
+        c = distinct_cuboids(3, 4, 5, m)
     return m
 
 def test_cubes(a, b, expected):
-    r = equivalent_cubes(a, b)
+    r = equivalent_cubes(a, b, 100)
     if not r == expected:
         print "equivalent_cubes(" + str(a) + ", " + str(b) + "); expected: " + str(expected) + " got: " + str(r)
 
-test_cubes(5, 6, 3)
+test_cubes(6, 8, 6)
 
-print str(distinct_cuboids(3, 4, 5, 99))
+#print str(distinct_cuboids(3, 4, 5, int(sys.argv[1])))
+print str(solution(1000000))
