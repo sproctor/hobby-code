@@ -144,46 +144,57 @@ def match_grid_doubles(grid):
     return False
 
 def remove_number_from_squares(grid, n, squares):
+    changed = False
     for [x, y] in squares:
         if isinstance(grid[x][y], list):
+            l = len(grid[x][y])
             grid[x][y] = remove_value(grid[x][y], n)
-    return grid
+            if l > len(grid[x][y]):
+                changed = True
+                print 'Removed ' + str(n) + ' from (' + str(x) + ', ' + str(y) + ') : ' + str(grid[x][y])
+    return changed
 
-def squares_outside_block_for_row(block_x, y):
+def squares_outside_block_for_col(block_x, y):
     squares = []
     for x in range(block_x * 3) + range(block_x * 3 + 3, 9):
         squares.append([x, y])
     return squares
 
-def squares_outside_block_for_col(block_y, x):
+def squares_outside_block_for_row(block_y, x):
     squares = []
     for y in range(block_y * 3) + range(block_y * 3 + 3, 9):
         squares.append([x, y])
     return squares
 
-def remove_ineligible_outside_block(grid):
+def squares_in_block(block_x, block_y):
+    squares = []
+    for x in xrange(block_x * 3, block_x * 3 + 3):
+        for y in xrange(block_y * 3, block_y * 3 + 3):
+            squares.append([x, y])
+    return squares
+
+def remove_ineligible_outside_blocks(grid):
     for block_x in xrange(3):
         for block_y in xrange(3):
+            print 'block x: ' + str(block_x) + ', block y: ' + str(block_y)
             for n in xrange(1, 10):
                 #TODO: refactor these two sections
                 rows = []
-                for x in xrange(block_x * 3, block_x * 3 + 3):
-                    for y in xrange(block_y * 3, block_y * 3 + 3):
-                        if isinstance(grid[x][y], list) and n in grid[x][y]:
-                            rows.append(x)
-                            break
+                for [x, y] in squares_in_block(block_x, block_y):
+                    if isinstance(grid[x][y], list) and n in grid[x][y] and not x in rows:
+                        rows.append(x)
                 if len(rows) == 1:
-                    remove_number_from_squares(grid, n, squares_outside_block_for_row(block_x, rows[0]))
-                    return True
+                    print 'removing for row ' + str(rows[0])
+                    if remove_number_from_squares(grid, n, squares_outside_block_for_row(block_y, rows[0])):
+                        return True
                 cols = []
-                for x in xrange(block_y * 3, block_y * 3 + 3):
-                    for y in xrange(block_x * 3, block_x * 3 + 3):
-                        if isinstance(grid[x][y], list) and n in grid[x][y]:
-                            cols.append(y)
-                            break
+                for [x, y] in squares_in_block(block_x, block_y):
+                    if isinstance(grid[x][y], list) and n in grid[x][y] and not y in cols:
+                        cols.append(y)
                 if len(cols) == 1:
-                    remove_number_from_squares(grid, n, squares_outside_block_for_col(block_y, cols[0]))
-                    return True
+                    print 'removing for col ' + str(cols[0])
+                    if remove_number_from_squares(grid, n, squares_outside_block_for_col(block_x, cols[0])):
+                        return True
     return False
 
 def replace_uniques(grid):
@@ -194,6 +205,12 @@ def replace_uniques(grid):
                 changed = True
     return changed
 
+def remove_ineligible_inside_blocks(grid):
+    for block_x in xrange(3):
+        for block_y in xrange(3):
+            for n in xrange(1, 10):
+                for row in xrange()
+                for [x, y] in squares_outside_block_for_row(block_y, )
 def solve(grid):
     changed = True
     while changed:
@@ -208,7 +225,7 @@ def solve(grid):
             if match_grid_doubles(grid):
                 changed = True
         if not changed:
-            if remove_ineligible_outside_block(grid):
+            if remove_ineligible_outside_blocks(grid):
                 changed = True
     if not is_solved(grid):
         print "Could not solve grid:"
@@ -238,12 +255,14 @@ test.test(possible_values, [8, 8, example_grid], [2, 4, 6, 7])
 test.test(possible_values, [8, 5, example_grid], [4, 7])
 test.test(possible_values, [8, 7, example_grid], [2, 4, 6, 7, 8])
 test.test(pairs, [[1, 2, 3]], [[1, 2], [1, 3], [2, 3]])
-test.test(remove_number_from_squares, [[[[1, 2, 3], [2, 3, 4], 9], [4, [5, 2, 4], 3], [[3, 2, 1], 3, 9]], 2, [[0, 0], [0, 1], [2, 0]]],
-    [[[1, 3], [3, 4], 9], [4, [5, 2, 4], 3], [[3, 1], 3, 9]])
-test.test(squares_outside_block_for_row, [0, 3],
+#test.test(remove_number_from_squares, [[[[1, 2, 3], [2, 3, 4], 9], [4, [5, 2, 4], 3], [[3, 2, 1], 3, 9]], 2, [[0, 0], [0, 1], [2, 0]]],
+#    [[[1, 3], [3, 4], 9], [4, [5, 2, 4], 3], [[3, 1], 3, 9]])
+test.test(squares_outside_block_for_col, [0, 3],
     [[3, 3], [4, 3], [5, 3], [6, 3], [7, 3], [8, 3]])
-test.test(squares_outside_block_for_col, [1, 5],
+test.test(squares_outside_block_for_row, [1, 5],
     [[5, 0], [5, 1], [5, 2], [5, 6], [5, 7], [5, 8]])
+test.test(squares_in_block, [0, 0], [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]])
+test.test(squares_in_block, [1, 2], [[3, 6], [3, 7], [3, 8], [4, 6], [4, 7], [4, 8], [5, 6], [5, 7], [5, 8]])
 print "tests completed"
 
 def main():
@@ -252,9 +271,11 @@ def main():
 
     for n in xrange(50):
         grid = [[int(x) for x in list(content[n * 10 + i + 1].strip())] for i in xrange(9)]
+        print "grid " + str(n + 1) + ':'
+        display_grid(grid)
         print grid
         solve(grid)
         print "grid " + str(n + 1) + ':'
         display_grid(grid)
 
-# main()
+main()
